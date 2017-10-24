@@ -200,8 +200,8 @@ enum LoggingParts {
         break
       } else {
         let index = restOfString.index(restOfString.startIndex, offsetBy: lineLength)
-        let stringPart = restOfString.substring(to: index)
-        restOfString = restOfString.substring(from: index)
+        let stringPart = restOfString.prefix(upTo: index)
+        restOfString = String(restOfString.suffix(from: index))
         
         parts.append(prefixPart + stringPart)
       }
