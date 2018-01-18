@@ -108,12 +108,18 @@ public struct LoggerMiddleware: Middleware {
     let newAction = transformedAction(action: action)
     
     let firstLine = logTitle(action: action, startTime: startTime, endTime: endTime)
+    var firstLineCharacterCount: Int
+    #if swift(>=4.0)
+      firstLineCharacterCount = firstLine.count
+    #else
+      firstLineCharacterCount = firstLine.characters.count
+    #endif
     logger([
       firstLine,
       LoggingParts.line(prefix: "├─ Prev state ► ", content: "\(oldState)", length: lineLength),
       LoggingParts.line(prefix: "├─ Action     ► ", content: "\(newAction)", length: lineLength),
       LoggingParts.line(prefix: "├─ Next state ► ", content: "\(newState)", length: lineLength),
-      closingLine(length: firstLine.characters.count)
+      closingLine(length: firstLineCharacterCount)
       ].joined(separator: "\n"))
   }
   
@@ -184,7 +190,12 @@ enum LoggingParts {
   static func line(prefix: String, content: String, length: Int?) -> String {
     guard let lenght = length else { return prefix + content }
     
-    let prefixLength = prefix.characters.count
+    var prefixLength: Int
+    #if swift(>=4.0)
+      prefixLength = prefix.count
+    #else
+      prefixLength = prefix.characters.count
+    #endif
     let lineLength = lenght - prefixLength - 1
     var restOfString = content
     var parts: [String] = []
@@ -195,13 +206,24 @@ enum LoggingParts {
     while true {
       let prefixPart = parts.count == 0 ? firstPrefix : linesPrefix
       
-      if restOfString.characters.count < lineLength {
+      var restOfStringCharacterCount: Int
+      #if swift(>=4.0)
+        restOfStringCharacterCount = restOfString.count
+      #else
+        restOfStringCharacterCount = restOfString.characters.count
+      #endif
+      if restOfStringCharacterCount < lineLength {
         parts.append(prefixPart + restOfString)
         break
       } else {
         let index = restOfString.index(restOfString.startIndex, offsetBy: lineLength)
-        let stringPart = restOfString.substring(to: index)
-        restOfString = restOfString.substring(from: index)
+        #if swift(>=4.0)
+          let stringPart = restOfString.prefix(upTo: index)
+          restOfString = String(restOfString.suffix(from: index))
+        #else
+          let stringPart = restOfString.substring(to: index)
+          restOfString = restOfString.substring(from: index)
+        #endif
         
         parts.append(prefixPart + stringPart)
       }
